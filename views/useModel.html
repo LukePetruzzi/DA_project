@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+    crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+    crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+    crossorigin="anonymous"></script>
+
+
+<iframe style="width:0;height:0;border:0; border:none;" name="dummyframe" id="dummyframe">
+</iframe>
+
+<div class="container">
+    <br>
+    <button type="button" class="btn btn-primary" style="float: right;" onclick="backToIntentCreation()">Back to Intent Creation</button>
+
+    <br>
+
+    <h1 class="display-3">Use Model</h1>
+    <div class="jumbotron">
+        <form onsubmit="detectIntent($('#utteranceForm').val())" target="dummyframe">
+            <input id="utteranceForm" type="text" class="form-control" placeholder="Enter utterance to detect">
+            <br>
+            <input type="submit" class="btn btn-success" value="Detect">
+        </form>
+    </div>
+
+    <h1 class="display-2">Results:</h1>
+    <div id=results class="jumbotron">
+
+    </div>
+</div>
+
+<script>
+
+    function detectIntent(utterance) {
+        if (utterance == "") return;
+
+        // clear form
+        $("#utteranceForm").val("");
+
+        $.ajax({
+            type: 'get',
+            url: 'http://localhost:8008/useModel',
+            data: {
+                utterance: utterance
+            },
+            success: function (response) {
+                addHTML(response);
+            },
+            error: function (error) {
+                console.log('error: ', error);
+            }
+        });
+    }
+
+    function addHTML(json) {
+        let data = JSON.parse(json);
+
+        if (data['queryResult']['intent'] === undefined) {
+            $("#results").prepend(`
+                <h2>Query: ${data['queryResult']['queryText']}<h3>
+                <h3>No Intent Matched<h3>
+                <h4>----------------------------------<h4>
+            `);
+        }
+        else {
+            $("#results").prepend(`
+                <h2>Query: ${data['queryResult']['queryText']}<h2>
+                <h3>Intent Matched: ${data['queryResult']['intent']['displayName']}<h3>
+                <h4>Confidence: ${data['queryResult']['intentDetectionConfidence']}<h4>
+                <h4>----------------------------------<h4>
+            `);
+        }
+    }
+
+    function backToIntentCreation() {
+        // return to /createIntent page
+        window.document.location.href = "/createIntent";
+    }
+
+</script>
